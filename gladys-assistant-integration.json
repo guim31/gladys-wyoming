@@ -1,177 +1,274 @@
 {
   "manifest_version": 1,
-  "type": "device",
-  "name": "Demo Devices Template",
+  "type": "tts",
+  "name": "Piper (Wyoming)",
   "description": {
-    "en": "Starter template showing sensors, a switch, a dimmable light and a smart plug.",
-    "fr": "Template de démarrage : capteurs, interrupteur, lampe variable et prise connectée."
+    "en": "Gladys speaks with a local voice: Piper or any Wyoming text-to-speech server.",
+    "fr": "Gladys parle avec une voix locale : Piper ou tout serveur de synthèse vocale Wyoming.",
+    "de": "Gladys spricht mit einer lokalen Stimme: Piper oder jeder Wyoming-Sprachausgabe-Server.",
+    "es": "Gladys habla con una voz local: Piper o cualquier servidor de síntesis de voz Wyoming."
   },
   "version": "1.0.0",
-  "docker_image": "ghcr.io/gladysassistant/integration-template-js:1.0.0",
-  "gladys_version": ">=5.1.0",
-  "cover_image": "https://raw.githubusercontent.com/GladysAssistant/integration-template-js/master/cover.png",
-  "categories": ["lighting", "security", "environment"],
-  "transports": ["local", "cloud"],
+  "docker_image": "ghcr.io/guim31/gladys-wyoming:1.0.0",
+  "gladys_version": ">=5.3.0",
+  "cover_image": "https://raw.githubusercontent.com/guim31/gladys-wyoming/main/cover.png",
+  "categories": ["assistants"],
+  "transports": ["local"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
-      "label": { "en": "Getting started", "fr": "Pour commencer" },
+      "label": {
+        "en": "Your Wyoming server",
+        "fr": "Votre serveur Wyoming",
+        "de": "Dein Wyoming-Server",
+        "es": "Su servidor Wyoming"
+      },
       "description": {
-        "en": "The demo weather station reads real data from the free Open-Meteo API: pick the coordinates to observe. No account, no API key.",
-        "fr": "La station météo de démonstration lit de vraies données via l'API gratuite Open-Meteo : choisissez les coordonnées à observer. Pas de compte, pas de clé d'API."
+        "en": "Piper listens on port 10200 (the rhasspy/wyoming-piper Docker image, or the Piper add-on of Home Assistant). Once saved, choose this voice in Integrations → Artificial Intelligence → Voice.",
+        "fr": "Piper écoute sur le port 10200 (image Docker rhasspy/wyoming-piper, ou module Piper de Home Assistant). Une fois enregistré, choisissez cette voix dans Intégrations → Intelligence artificielle → Voix.",
+        "de": "Piper lauscht auf Port 10200 (Docker-Image rhasspy/wyoming-piper oder das Piper-Add-on von Home Assistant). Wähle danach diese Stimme unter Integrationen → Künstliche Intelligenz → Stimme.",
+        "es": "Piper escucha en el puerto 10200 (imagen Docker rhasspy/wyoming-piper o el complemento Piper de Home Assistant). Después, elija esta voz en Integraciones → Inteligencia artificial → Voz."
       },
       "links": [
         {
-          "url": "https://open-meteo.com/en/docs",
-          "label": { "en": "Open-Meteo documentation", "fr": "Documentation Open-Meteo" }
+          "url": "https://github.com/rhasspy/wyoming-piper",
+          "label": {
+            "en": "Install Piper (Wyoming)",
+            "fr": "Installer Piper (Wyoming)",
+            "de": "Piper (Wyoming) installieren",
+            "es": "Instalar Piper (Wyoming)"
+          }
+        },
+        {
+          "url": "https://rhasspy.github.io/piper-samples/",
+          "label": {
+            "en": "Listen to the Piper voices",
+            "fr": "Écouter les voix Piper",
+            "de": "Piper-Stimmen anhören",
+            "es": "Escuchar las voces de Piper"
+          }
         }
       ]
     },
     {
-      "key": "latitude",
-      "type": "number",
-      "label": { "en": "Latitude", "fr": "Latitude" },
-      "description": {
-        "en": "Latitude used for the demo weather sensor.",
-        "fr": "Latitude utilisée par le capteur météo de démonstration."
+      "key": "host",
+      "type": "string",
+      "label": {
+        "en": "Server address",
+        "fr": "Adresse du serveur",
+        "de": "Serveradresse",
+        "es": "Dirección del servidor"
       },
-      "placeholder": { "en": "e.g. 48.8566", "fr": "ex. 48.8566" },
-      "required": true,
-      "default": 48.8566,
-      "min": -90,
-      "max": 90
+      "description": {
+        "en": "IP address or name of the machine running the Wyoming server. A port written here (192.168.1.20:10200) wins over the port field.",
+        "fr": "Adresse IP ou nom de la machine qui fait tourner le serveur Wyoming. Un port écrit ici (192.168.1.20:10200) l'emporte sur le champ Port.",
+        "de": "IP-Adresse oder Name des Rechners mit dem Wyoming-Server. Ein hier angegebener Port (192.168.1.20:10200) hat Vorrang vor dem Feld Port.",
+        "es": "Dirección IP o nombre de la máquina que ejecuta el servidor Wyoming. Un puerto escrito aquí (192.168.1.20:10200) prevalece sobre el campo Puerto."
+      },
+      "placeholder": {
+        "en": "e.g. 192.168.1.20",
+        "fr": "ex. 192.168.1.20",
+        "de": "z. B. 192.168.1.20",
+        "es": "p. ej. 192.168.1.20"
+      },
+      "required": true
     },
     {
-      "key": "longitude",
+      "key": "port",
       "type": "number",
-      "label": { "en": "Longitude", "fr": "Longitude" },
-      "description": {
-        "en": "Longitude used for the demo weather sensor.",
-        "fr": "Longitude utilisée par le capteur météo de démonstration."
+      "label": {
+        "en": "Port",
+        "fr": "Port",
+        "de": "Port",
+        "es": "Puerto"
       },
-      "placeholder": { "en": "e.g. 2.3522", "fr": "ex. 2.3522" },
-      "required": true,
-      "default": 2.3522,
-      "min": -180,
-      "max": 180
+      "description": {
+        "en": "10200 for Piper; each Wyoming service has its own port.",
+        "fr": "10200 pour Piper ; chaque service Wyoming a son propre port.",
+        "de": "10200 für Piper; jeder Wyoming-Dienst hat seinen eigenen Port.",
+        "es": "10200 para Piper; cada servicio Wyoming tiene su propio puerto."
+      },
+      "required": false,
+      "default": 10200,
+      "min": 1,
+      "max": 65535
     },
     {
-      "key": "unit",
+      "key": "voices",
+      "type": "string",
+      "label": {
+        "en": "Preferred voices",
+        "fr": "Voix préférées",
+        "de": "Bevorzugte Stimmen",
+        "es": "Voces preferidas"
+      },
+      "description": {
+        "en": "Optional, separated by commas: fr_FR-siwis-medium, en_US-lessac-medium. Each language speaks with the first listed voice of that language, else a voice of the server; the first one is the default.",
+        "fr": "Facultatif, séparées par des virgules : fr_FR-siwis-medium, en_US-lessac-medium. Chaque langue prend la première voix listée de cette langue, sinon une voix du serveur ; la première sert par défaut.",
+        "de": "Optional, durch Kommas getrennt: fr_FR-siwis-medium, en_US-lessac-medium. Jede Sprache nimmt die erste gelistete Stimme dieser Sprache, sonst eine des Servers; die erste ist der Standard.",
+        "es": "Opcional, separadas por comas: fr_FR-siwis-medium, en_US-lessac-medium. Cada idioma usa la primera voz de la lista en ese idioma, si no una del servidor; la primera es la predeterminada."
+      },
+      "placeholder": {
+        "en": "Automatic",
+        "fr": "Automatique",
+        "de": "Automatisch",
+        "es": "Automático"
+      },
+      "required": false,
+      "default": ""
+    },
+    {
+      "key": "audio_format",
       "type": "select",
-      "label": { "en": "Temperature unit", "fr": "Unité de température" },
-      "required": false,
-      "default": "celsius",
-      "options": [
-        { "value": "celsius", "label": { "en": "Celsius", "fr": "Celsius" } },
-        { "value": "fahrenheit", "label": { "en": "Fahrenheit", "fr": "Fahrenheit" } }
-      ]
-    },
-    {
-      "key": "poll_frequency",
-      "type": "number",
-      "label": { "en": "Refresh interval (s)", "fr": "Intervalle de rafraîchissement (s)" },
+      "label": {
+        "en": "Audio format",
+        "fr": "Format audio",
+        "de": "Audioformat",
+        "es": "Formato de audio"
+      },
       "description": {
-        "en": "How often sensors are polled, in seconds (one minute minimum).",
-        "fr": "Fréquence d'interrogation des capteurs, en secondes (une minute minimum)."
+        "en": "MP3 plays on every speaker (Google Cast included). WAV skips the encoding but weighs eight times more.",
+        "fr": "Le MP3 passe sur toutes les enceintes (Google Cast compris). Le WAV évite l'encodage mais pèse huit fois plus.",
+        "de": "MP3 läuft auf allen Lautsprechern (auch Google Cast). WAV spart die Kodierung, ist aber achtmal größer.",
+        "es": "El MP3 funciona en todos los altavoces (Google Cast incluido). El WAV evita la codificación pero pesa ocho veces más."
       },
       "required": false,
-      "default": 300,
-      "min": 60,
-      "max": 3600
+      "default": "mp3",
+      "options": [
+        {
+          "value": "mp3",
+          "label": { "en": "MP3", "fr": "MP3", "de": "MP3", "es": "MP3" }
+        },
+        {
+          "value": "wav",
+          "label": { "en": "WAV", "fr": "WAV", "de": "WAV", "es": "WAV" }
+        }
+      ]
     }
   ],
   "actions": [
     {
-      "key": "test_weather",
-      "label": { "en": "Test the weather provider", "fr": "Tester le fournisseur météo" },
-      "timeout_seconds": 30
-    },
-    {
-      "key": "identify",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
+      "key": "test_voice",
+      "label": {
+        "en": "Test the voice",
+        "fr": "Tester la voix",
+        "de": "Stimme testen",
+        "es": "Probar la voz"
+      },
+      "timeout_seconds": 120,
       "fields": [
         {
-          "key": "device",
+          "key": "language",
           "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
+          "label": {
+            "en": "Language",
+            "fr": "Langue",
+            "de": "Sprache",
+            "es": "Idioma"
+          },
+          "options": [
+            {
+              "value": "fr",
+              "label": { "en": "French", "fr": "Français", "de": "Französisch", "es": "Francés" }
+            },
+            {
+              "value": "en",
+              "label": { "en": "English", "fr": "Anglais", "de": "Englisch", "es": "Inglés" }
+            },
+            {
+              "value": "de",
+              "label": { "en": "German", "fr": "Allemand", "de": "Deutsch", "es": "Alemán" }
+            },
+            {
+              "value": "es",
+              "label": { "en": "Spanish", "fr": "Espagnol", "de": "Spanisch", "es": "Español" }
+            }
+          ]
+        },
+        {
+          "key": "text",
+          "type": "string",
+          "label": {
+            "en": "Text (optional)",
+            "fr": "Texte (facultatif)",
+            "de": "Text (optional)",
+            "es": "Texto (opcional)"
+          }
+        }
+      ]
+    },
+    {
+      "key": "list_voices",
+      "label": {
+        "en": "Show the voices",
+        "fr": "Afficher les voix",
+        "de": "Stimmen anzeigen",
+        "es": "Mostrar las voces"
+      },
+      "timeout_seconds": 20,
+      "fields": [
+        {
+          "key": "language",
+          "type": "select",
+          "label": {
+            "en": "Language",
+            "fr": "Langue",
+            "de": "Sprache",
+            "es": "Idioma"
+          },
+          "options": [
+            {
+              "value": "fr",
+              "label": { "en": "French", "fr": "Français", "de": "Französisch", "es": "Francés" }
+            },
+            {
+              "value": "en",
+              "label": { "en": "English", "fr": "Anglais", "de": "Englisch", "es": "Inglés" }
+            },
+            {
+              "value": "de",
+              "label": { "en": "German", "fr": "Allemand", "de": "Deutsch", "es": "Alemán" }
+            },
+            {
+              "value": "es",
+              "label": { "en": "Spanish", "fr": "Espagnol", "de": "Spanisch", "es": "Español" }
+            }
+          ]
         }
       ]
     }
   ],
   "scene_triggers": [
     {
-      "key": "motion_detected",
-      "label": { "en": "Motion detected", "fr": "Mouvement détecté" },
-      "description": {
-        "en": "A demo motion sensor saw a person or an animal move.",
-        "fr": "Un détecteur de démonstration a vu bouger une personne ou un animal."
+      "key": "server_offline",
+      "label": {
+        "en": "Voice server unreachable",
+        "fr": "Serveur de voix injoignable",
+        "de": "Sprachserver nicht erreichbar",
+        "es": "Servidor de voz inaccesible"
       },
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Sensor", "fr": "Détecteur" }
-        },
-        {
-          "key": "target",
-          "type": "multi_select",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" },
-          "options": [
-            { "value": "person", "label": { "en": "Person", "fr": "Personne" } },
-            { "value": "animal", "label": { "en": "Animal", "fr": "Animal" } }
-          ]
-        }
-      ],
-      "variables": [
-        {
-          "key": "target",
-          "type": "string",
-          "label": { "en": "What moved", "fr": "Ce qui a bougé" }
-        }
-      ]
-    }
-  ],
-  "scene_actions": [
+      "description": {
+        "en": "The Wyoming server stopped answering: announcements will fail until it is back.",
+        "fr": "Le serveur Wyoming ne répond plus : les annonces échoueront jusqu'à son retour.",
+        "de": "Der Wyoming-Server antwortet nicht mehr: Durchsagen schlagen fehl, bis er zurück ist.",
+        "es": "El servidor Wyoming ya no responde: los anuncios fallarán hasta que vuelva."
+      }
+    },
     {
-      "key": "identify_device",
-      "label": { "en": "Identify a device", "fr": "Identifier un appareil" },
-      "description": {
-        "en": "Make a device signal itself (the demo light blinks).",
-        "fr": "Fait se signaler un appareil (la lampe de démonstration clignote)."
+      "key": "server_online",
+      "label": {
+        "en": "Voice server back",
+        "fr": "Serveur de voix revenu",
+        "de": "Sprachserver wieder da",
+        "es": "Servidor de voz de vuelta"
       },
-      "timeout_seconds": 15,
-      "fields": [
-        {
-          "key": "device",
-          "type": "select",
-          "source": "devices",
-          "label": { "en": "Device", "fr": "Appareil" },
-          "required": true
-        }
-      ],
-      "outputs": [
-        {
-          "key": "signalled",
-          "type": "boolean",
-          "label": { "en": "Device signalled", "fr": "Appareil signalé" }
-        }
-      ]
-    }
-  ],
-  "widgets": [
-    {
-      "key": "demo_status",
-      "label": { "en": "Demo status", "fr": "État de la démo" },
       "description": {
-        "en": "Live temperature and plug power, plug connection and observed location.",
-        "fr": "Température et puissance en direct, connexion de la prise, position observée."
-      },
-      "icon": "activity",
-      "action_timeout_seconds": 15
+        "en": "The Wyoming server answers again after an outage.",
+        "fr": "Le serveur Wyoming répond de nouveau après une panne.",
+        "de": "Der Wyoming-Server antwortet nach einem Ausfall wieder.",
+        "es": "El servidor Wyoming vuelve a responder tras una avería."
+      }
     }
   ]
 }

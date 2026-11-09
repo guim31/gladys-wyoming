@@ -9,15 +9,15 @@ A Gladys Assistant **external integration**: a Node.js service (Node 22+, ESM,
 no build step) that runs in its own sandboxed Docker container and talks to
 Gladys through
 [`@gladysassistant/integration-sdk`](https://github.com/GladysAssistant/integration-sdk-js),
-its only runtime dependency. It started from the official JavaScript template.
+plus `@breezystack/lamejs` (pure JavaScript MP3 encoder). It started from the official JavaScript template.
 
 ## Commands
 
 ```bash
 npm install
 npm test                                  # node --test, the built-in runner
-node --test test/devices.test.js          # one file
-node --test --test-name-pattern "plug"    # tests whose name matches
+node --test test/provider.test.js         # one file
+node --test --test-name-pattern "voice"   # tests whose name matches
 npm run lint                              # ESLint
 npm run format:check                      # Prettier, as the CI runs it
 npm run format                            # Prettier, fix in place
@@ -31,16 +31,19 @@ pushing.
 ## Architecture
 
 ```
-index.js                          SDK wiring only: handlers registered before connect()
-src/devices/index.js              registry of the device blueprints + dispatch helpers
-src/devices/<type>.js             one device type per file (buildDevice, onPoll, onSetValue...)
-src/scenes.js                     scene action handlers (manifest `scene_actions`)
-src/widgets.js                    dashboard widget handlers (manifest `widgets`)
+index.js                          SDK wiring only: registerHandlers, shutdown, connect()
+src/app.js                        every SDK handler (onTtsSynthesize, actions, config, connected)
+src/provider.js                   WyomingProvider: server checks, status, triggers, synthesis, buttons
+src/wyoming.js                    Wyoming protocol client: framing parser, describe, synthesize
+src/voices.js                     voices of the `info` event, choice of a voice per language
+src/text.js                       long texts split into pieces of whole sentences
+src/audio.js                      PCM → WAV (resampled under 5 MB) or MP3 (lamejs, streamed)
+src/texts.js                      every text sent to Gladys, in en/fr/de/es
 src/config.js                     DEFAULT_CONFIG (mirrors the manifest defaults) + normalization
-src/weather.js                    example driver (Open-Meteo)
-gladys-assistant-integration.json manifest: name, config_schema, actions, image...
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
-test/                             node --test, against the SDK's fake Gladys (integration-sdk/testing)
+gladys-assistant-integration.json manifest (type "tts"): config_schema, actions, scene_triggers
+docs/{en,fr,de,es}.md             user documentation, re-hosted by Gladys (same sections)
+test/                             node --test, SDK fake Gladys + fake Wyoming server (test/helpers)
+test/fixtures/piper-*.bin         raw bytes of a real rhasspy/wyoming-piper 2.5.2 (describe, synthesize)
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
 
@@ -70,8 +73,8 @@ test/                             node --test, against the SDK's fake Gladys (in
   `type: "provider"`: 5.1.0). `test/manifest.test.js` ties the manifest to the
   code (defaults, action, scene and widget handlers): change both sides
   together.
-- **User-facing text** is bilingual (English and French): action messages,
-  manifest texts, and `docs/en.md` / `docs/fr.md`, kept in sync.
+- **User-facing text** exists in English, French, German and Spanish: action
+  messages, manifest texts, and `docs/*.md`, kept in sync (`test/i18n.test.js`).
 - **Style.** Prettier formats, ESLint catches mistakes. Comments explain why,
   in English. Tests never touch the network.
 
@@ -251,3 +254,27 @@ long, et sur un « Sie »/« Ihr… » de politesse en allemand. Le store exige 
 - Docs `en`, `fr`, `de`, `es` avec les mêmes sections.
 - Chauffe, ouverture, sécurité : ne rien rendre pilotable « comme un thermostat » ou par un assistant
   vocal quand une erreur serait dangereuse (leçon d'OctoPrint).
+
+## Piper / Wyoming (propre à cette intégration)
+
+- **Protocole** : une ligne JSON par événement (`type`, `data_length`, `payload_length`), puis `data_length` octets de
+  JSON fusionnés dans `data`, puis le binaire. Le `data` peut aussi être dans la ligne (versions récentes) : fusionner
+  les deux. Une connexion TCP par échange, fermée par le client après `info` ou `audio-stop`. Une erreur arrive en
+  événement `error` (`text`, `code`) : Piper 2.5.2 répond `{ text: "<voix>", code: "VoiceNotFoundError" }` à une voix
+  inconnue quand le téléchargement échoue.
+- **Piper liste ~174 voix `installed: true`**, téléchargées à la première demande (quelques secondes, jusqu'à la
+  minute) : le choix automatique préfère les voix proposées par Home Assistant (`fr_FR-siwis-medium`…), et le bouton
+  « Tester la voix » (120 s) sert à précharger une voix. Piper ignore `voice.language` : sans nom, il parle avec sa voix
+  `--voice`. Certaines voix ont plus de cent locuteurs numérotés (`fr_FR-mls-medium`) : liste tronquée.
+- **Piper finit un texte commencé même si le client part, et ne synthétise qu'un texte à la fois** (`_VOICE_LOCK`) :
+  2 000 caractères envoyés d'un bloc et coupés à 30 s l'occupaient encore une minute et retardaient l'annonce suivante.
+  D'où le découpage en pièces de 300 caractères (phrases entières) sous une seule échéance de 22 s ; à l'échéance, le
+  début déjà reçu est rendu (le cœur tronque lui aussi plutôt que d'échouer). Mesuré sur le Beelink (CPU partagé) :
+  2 000 caractères = 2 min de parole synthétisées en ~40 s ; ~50 s de parole tiennent dans l'échéance.
+- **Encodage MP3 au fil des pièces** (`Mp3Stream`) : encoder 60 s d'audio à la fin prenait ~5 s sous charge et faisait
+  dépasser les 30 s du cœur. lamejs ne prend que les fréquences MPEG (8 000 à 48 000 Hz) : rééchantillonner sinon.
+- Le cœur accepte `audio/wav` mais `google-cast` annonce toute URL en `audio/mp3` (spec tts-type, « Later leads ») :
+  MP3 par défaut.
+- Pas de widget ni d'action de scène : le cœur fournit « Jouer une notification », et un widget n'aurait rien à
+  montrer d'utile. Les déclencheurs `server_offline`/`server_online` ne partent que sur une vraie transition (pas au
+  démarrage) ; vérification du serveur (`describe`) chaque minute.

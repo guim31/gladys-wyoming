@@ -30,6 +30,13 @@ Gladys before reporting a problem.
 
 In scope: the code of this repository and the Docker image it publishes.
 
+The integration stores nothing in `/data` and handles no secret: its
+configuration (server address, port, voice names, audio format) is kept by
+Gladys. It opens plain TCP connections to the Wyoming server you configure,
+on your local network, and sends it the texts Gladys asks to speak: the
+Wyoming protocol has neither encryption nor authentication, so keep that
+server on a trusted network. The spoken texts are never written to the logs.
+
 Out of scope: Gladys Assistant itself (see its
 [security policy](https://github.com/GladysAssistant/Gladys/security/policy)),
-and the third-party services and devices the integration talks to.
+Piper and the other Wyoming servers the integration talks to.
