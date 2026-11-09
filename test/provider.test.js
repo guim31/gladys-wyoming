@@ -11,6 +11,7 @@ import { CONNECTION_TEXT, ERROR_TEXT } from '../src/texts.js';
 import { TRIGGERS } from '../src/provider.js';
 import { HOST, createWorld } from './helpers/world.js';
 import { FakeWyoming, toneAnswer } from './helpers/fakeWyoming.js';
+import { encodeEvent } from '../src/wyoming.js';
 
 async function world(t, options) {
   const w = await createWorld(options);
@@ -139,6 +140,7 @@ test('a synthesis that succeeds while the server was marked down brings it back'
   w.server.online = true;
   const ack = await w.fake.ttsSynthesize('Bonjour', 'fr');
   assert.equal(ack.success, true);
+  await w.provider.pendingRefresh;
   assert.deepEqual(w.fake.connectionStatus, { connected: true });
 });
 
@@ -241,4 +243,28 @@ test('a long text goes piece by piece, joined by a pause, cut at the deadline', 
   const cut = await slow.fake.ttsSynthesize(text, 'fr');
   assert.equal(cut.success, true, cut.error);
   assert.equal(slow.server.syntheses.length, 2);
+});
+
+test('a piece refused after the first ones still speaks the beginning', async (t) => {
+  const w = await world(t);
+  w.server.audio = toneAnswer(1);
+  const answer = w.server.answer.bind(w.server);
+  w.server.answer = (event) =>
+    w.server.syntheses.length > 1
+      ? encodeEvent('error', { text: 'x'.repeat(500), code: 'RuntimeError' })
+      : answer(event);
+  const ack = await w.fake.ttsSynthesize('Première phrase du résumé. '.repeat(30).trim(), 'fr');
+  assert.equal(ack.success, true, ack.error);
+});
+
+test('a check of the old server answering late does not overwrite the new one', async (t) => {
+  const w = await world(t);
+  w.server.hang = true;
+  w.provider.timings.describeTimeoutMs = 50;
+  const late = w.provider.refresh(); // old address, times out after the change
+  w.server.hang = false;
+  await w.fake.configUpdated({ host: '192.0.2.31' });
+  await late;
+  assert.deepEqual(w.fake.connectionStatus, { connected: true });
+  assert.deepEqual(w.fake.sceneEvents, []);
 });

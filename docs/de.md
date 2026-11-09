@@ -44,7 +44,7 @@ Texte verlassen dein Zuhause nicht.
    `fr_FR-upmc-medium:pierre`. Die Piper-Stimmen kannst du auf
    [ihrer Beispielseite](https://rhasspy.github.io/piper-samples/) anhören.
 3. **Audioformat**: **MP3** (Standard) läuft auf allen Lautsprechern, auch
-   Google Cast. **WAV** spart die Kodierung, ist aber achtmal größer.
+   Google Cast. **WAV** spart die Kodierung, ist aber etwa fünfmal größer.
 4. Speichere, öffne dann **Integrationen → Künstliche Intelligenz**, Karte
    **Stimme**, und wähle **Piper (Wyoming)**.
 

@@ -44,7 +44,7 @@ pas la maison.
    locuteur après deux-points : `fr_FR-upmc-medium:pierre`. Les voix de Piper
    s'écoutent sur [sa page d'exemples](https://rhasspy.github.io/piper-samples/).
 3. **Format audio** : le **MP3** (par défaut) passe sur toutes les enceintes,
-   Google Cast compris. Le **WAV** évite l'encodage mais pèse huit fois plus.
+   Google Cast compris. Le **WAV** évite l'encodage mais pèse environ cinq fois plus.
 4. Enregistrez, puis ouvrez **Intégrations → Intelligence artificielle**,
    carte **Voix**, et choisissez **Piper (Wyoming)**.
 

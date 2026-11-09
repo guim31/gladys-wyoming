@@ -44,7 +44,7 @@ casa.
    [su página de ejemplos](https://rhasspy.github.io/piper-samples/).
 3. **Formato de audio**: el **MP3** (por defecto) funciona en todos los
    altavoces, Google Cast incluido. El **WAV** evita la codificación pero pesa
-   ocho veces más.
+   unas cinco veces más.
 4. Guarde, luego abra **Integraciones → Inteligencia artificial**, tarjeta
    **Voz**, y elija **Piper (Wyoming)**.
 

@@ -216,7 +216,9 @@ export function exchange({
       try {
         for (const event of parser.push(chunk)) {
           if (event.type === 'error') {
-            const text = typeof event.data.text === 'string' ? event.data.text : 'unknown error';
+            // Bounded: a Python exception text may quote the input.
+            const text =
+              typeof event.data.text === 'string' ? event.data.text.slice(0, 120) : 'unknown error';
             finish(
               new WyomingError(ERROR_KINDS.server, `Server error: ${text}`, { serverText: text }),
             );

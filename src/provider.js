@@ -89,11 +89,21 @@ export class WyomingProvider {
     this.state = null;
     this.downSince = null;
     this.timer = null;
+    // Bumped on an address change: a check of the old server answering late
+    // must not overwrite the state of the new one.
+    this.generation = 0;
+    this.pendingRefresh = Promise.resolve();
   }
 
   async start(config) {
     this.config = config;
     await this.refresh();
+    this.armTimer();
+  }
+
+  // Also armed by reconfigure(): a first start whose getConfig failed never
+  // reached start().
+  armTimer() {
     if (this.useTimers && !this.timer) {
       this.timer = setInterval(() => {
         this.refresh().catch((err) => logger.error('Server check failed', err));
@@ -108,11 +118,13 @@ export class WyomingProvider {
     this.config = config;
     if (moved) {
       logger.info('Configuration updated: new server address');
+      this.generation += 1;
       this.voices = [];
       // A new server is not the same one coming back: no scene event.
       this.state = null;
     }
     await this.refresh();
+    this.armTimer();
   }
 
   /** After a Gladys restart: Gladys may have lost the connection status. */
@@ -138,6 +150,7 @@ export class WyomingProvider {
       await this.setState('unconfigured');
       return;
     }
+    const generation = this.generation;
     try {
       const info = await describe({
         host: this.config.host,
@@ -145,13 +158,18 @@ export class WyomingProvider {
         timeoutMs: this.timings.describeTimeoutMs,
         connect: this.connect,
       });
+      if (generation !== this.generation) {
+        return;
+      }
       if (!hasTts(info)) {
         throw new WyomingError(ERROR_KINDS.noTts, 'No tts program in the server info');
       }
       this.voices = parseVoices(info);
       await this.setState('online');
     } catch (err) {
-      await this.setState('offline', asWyomingError(err));
+      if (generation === this.generation) {
+        await this.setState('offline', asWyomingError(err));
+      }
     }
   }
 
@@ -240,8 +258,9 @@ export class WyomingProvider {
       throw error;
     }
     if (this.state !== 'online') {
-      // It answered: the next check will refresh the voices.
-      await this.refresh();
+      // It answered: refresh the voices and the status, without delaying
+      // the clip Gladys waits for.
+      this.pendingRefresh = this.refresh().catch((err) => logger.error('Server check failed', err));
     }
     if (!result.clip) {
       throw new WyomingError(ERROR_KINDS.tooLong, 'Clip above 5 MB even resampled');
@@ -293,7 +312,9 @@ export class WyomingProvider {
           connect: this.connect,
         });
       } catch (err) {
-        if (keepBeginning && format && err.kind === ERROR_KINDS.timeout) {
+        if (keepBeginning && format) {
+          // Whatever stopped the next piece, the pieces already spoken stay.
+          logger.debug(`Piece after ${round1(seconds)} s failed (${err.kind ?? 'error'})`);
           truncated = true;
           break;
         }

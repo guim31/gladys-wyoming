@@ -43,7 +43,7 @@ home.
    `fr_FR-upmc-medium:pierre`. The voices of Piper can be heard on
    [its sample page](https://rhasspy.github.io/piper-samples/).
 3. **Audio format**: **MP3** (default) plays on every speaker, Google Cast
-   included. **WAV** skips the encoding but weighs eight times more.
+   included. **WAV** skips the encoding but weighs about five times more.
 4. Save, then open **Integrations → Artificial Intelligence**, card **Voice**,
    and choose **Piper (Wyoming)**.
 

@@ -44,7 +44,7 @@ test('the WAV file has a canonical header around the PCM', async () => {
   assert.deepEqual(wav.subarray(44), piper.pcm);
 });
 
-test('the MP3 clip is a stream of MPEG frames, eight times lighter than the WAV', async () => {
+test('the MP3 clip is a stream of MPEG frames, about five times lighter than the WAV', async () => {
   const clip = await buildClip(piper, 'mp3');
   assert.equal(clip.contentType, 'audio/mpeg');
   assert.equal(clip.buffer[0], 0xff);
