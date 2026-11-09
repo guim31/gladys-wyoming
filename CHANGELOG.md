@@ -10,6 +10,8 @@ the notes of the version's GitHub Release.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-09
+
 ### Added
 
 - A text-to-speech voice for Gladys 5.3 (Integrations → Artificial
@@ -26,3 +28,6 @@ the notes of the version's GitHub Release.
 - Server state in Supervision, and the "Voice server unreachable" and "Voice
   server back" scene triggers.
 - Documentation in English, French, German and Spanish.
+
+[Unreleased]: https://github.com/guim31/gladys-wyoming/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/guim31/gladys-wyoming/releases/tag/v1.0.0
